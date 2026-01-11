@@ -25,6 +25,7 @@ A university-exclusive social media platform for UTU (Uttarakhand Technical Univ
 - **Framework**: Express.js
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: JWT (Access + Refresh tokens)
+- **OTP Service**: Supabase Auth (with SMTP fallback)
 - **Real-time**: Socket.io
 - **Security**: bcrypt for password hashing
 
@@ -113,7 +114,13 @@ BSocial/
    JWT_SECRET="your-super-secret-jwt-key"
    JWT_REFRESH_SECRET="your-refresh-secret-key"
    PORT=5000
+   
+   # Supabase (for OTP emails)
+   SUPABASE_URL="https://your-project.supabase.co"
+   SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
    ```
+
+   > 📧 **OTP Setup**: See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md) for detailed Supabase configuration
 
 4. **Set up the database**
    ```bash
