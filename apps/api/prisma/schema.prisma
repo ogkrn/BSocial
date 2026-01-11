@@ -1,0 +1,289 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?   @map("password_hash")
+  fullName      String    @map("full_name")
+  username      String    @unique
+  avatarUrl     String?   @map("avatar_url")
+  bio           String?
+  branch        String?   // CSE, ECE, ME, etc.
+  year          String?   // 1st, 2nd, 3rd, 4th
+  isVerified    Boolean   @default(false) @map("is_verified")
+  isActive      Boolean   @default(true) @map("is_active")
+  lastSeenAt    DateTime? @map("last_seen_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  posts                  Post[]
+  comments               Comment[]
+  likes                  Like[]
+  sentMessages           Message[]                  @relation("SentMessages")
+  notifications          Notification[]             @relation("UserNotifications")
+  actorNotifications     Notification[]             @relation("ActorNotifications")
+  following              Follow[]                   @relation("Following")
+  followers              Follow[]                   @relation("Followers")
+  pageFollows            PageFollow[]
+  pageMemberships        PageMember[]
+  createdPages           Page[]
+  conversationParticipants ConversationParticipant[]
+  refreshTokens          RefreshToken[]
+  otpCodes               OtpCode[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  type      String   // verification, password_reset
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("otp_codes")
+}
+
+// ============================================
+// POSTS & CONTENT
+// ============================================
+
+model Post {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  pageId        String?  @map("page_id")
+  content       String
+  mediaUrls     String[] @map("media_urls")
+  postType      String   @default("text") @map("post_type") // text, image, poll, event
+  visibility    String   @default("public") // public, followers, page_members
+  likesCount    Int      @default(0) @map("likes_count")
+  commentsCount Int      @default(0) @map("comments_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page     Page?     @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  comments Comment[]
+  likes    Like[]
+
+  @@index([userId])
+  @@index([pageId])
+  @@index([createdAt(sort: Desc)])
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  parentId  String?  @map("parent_id") // For reply threads
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+  likes   Like[]
+
+  @@index([postId])
+  @@index([userId])
+  @@map("comments")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  postId    String?  @map("post_id")
+  commentId String?  @map("comment_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@map("likes")
+}
+
+// ============================================
+// FOLLOWS
+// ============================================
+
+model Follow {
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+// ============================================
+// PAGES (CLUBS/ORGANIZATIONS)
+// ============================================
+
+model Page {
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  description    String?
+  avatarUrl      String?  @map("avatar_url")
+  coverUrl       String?  @map("cover_url")
+  category       String   // dramatics, sports, tech, cultural, academic, etc.
+  isVerified     Boolean  @default(false) @map("is_verified")
+  followersCount Int      @default(0) @map("followers_count")
+  createdById    String   @map("created_by_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  createdBy User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  posts     Post[]
+  followers PageFollow[]
+  members   PageMember[]
+
+  @@index([category])
+  @@index([slug])
+  @@map("pages")
+}
+
+model PageFollow {
+  userId    String   @map("user_id")
+  pageId    String   @map("page_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@id([userId, pageId])
+  @@map("page_follows")
+}
+
+model PageMember {
+  id         String   @id @default(uuid())
+  pageId     String   @map("page_id")
+  userId     String   @map("user_id")
+  role       String   @default("member") // admin, moderator, member
+  isApproved Boolean  @default(true) @map("is_approved")
+  joinedAt   DateTime @default(now()) @map("joined_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, userId])
+  @@map("page_members")
+}
+
+// ============================================
+// MESSAGING
+// ============================================
+
+model Conversation {
+  id        String   @id @default(uuid())
+  type      String   @default("direct") // direct, group
+  name      String?  // For group chats
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  conversationId String    @map("conversation_id")
+  userId         String    @map("user_id")
+  joinedAt       DateTime  @default(now()) @map("joined_at")
+  lastReadAt     DateTime? @map("last_read_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  conversationId String    @map("conversation_id")
+  senderId       String    @map("sender_id")
+  content        String
+  mediaUrl       String?   @map("media_url")
+  messageType    String    @default("text") @map("message_type") // text, image, file
+  isRead         Boolean   @default(false) @map("is_read")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("messages")
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  type          String    // like, comment, follow, mention, page_post
+  actorId       String    @map("actor_id")
+  referenceId   String?   @map("reference_id")
+  referenceType String?   @map("reference_type") // post, comment, page
+  isRead        Boolean   @default(false) @map("is_read")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  readAt        DateTime? @map("read_at")
+
+  user  User @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor User @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt(sort: Desc)])
+  @@map("notifications")
+}
