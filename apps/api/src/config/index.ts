@@ -33,7 +33,7 @@ export const config = {
     port: parseInt(process.env.SMTP_PORT || '587', 10),
     user: process.env.SMTP_USER!,
     pass: process.env.SMTP_PASS!,
-    from: process.env.EMAIL_FROM || 'noreply@bsocial.uktech.net.in',
+    from: process.env.EMAIL_FROM || 'noreply@bsocial.com',
   },
   
   // Cloudinary
@@ -50,7 +50,7 @@ export const config = {
   },
   
   // App Settings
-  allowedEmailDomain: process.env.ALLOWED_EMAIL_DOMAIN || 'uktech.net.in',
+  allowedEmailDomain: process.env.ALLOWED_EMAIL_DOMAIN || '',
   otpExpiryMinutes: parseInt(process.env.OTP_EXPIRY_MINUTES || '10', 10),
 };
 

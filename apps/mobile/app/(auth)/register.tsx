@@ -18,8 +18,9 @@ export default function Register() {
       return;
     }
 
-    if (!email.endsWith('@uktech.net.in')) {
-      setError('Please use your @uktech.net.in email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
       return;
     }
 
@@ -50,7 +51,7 @@ export default function Register() {
 
           <View style={styles.header}>
             <Text style={styles.title}>Create account</Text>
-            <Text style={styles.subtitle}>Enter your university email</Text>
+            <Text style={styles.subtitle}>Enter your email to get started</Text>
           </View>
 
           <View style={styles.form}>
@@ -61,11 +62,11 @@ export default function Register() {
             ) : null}
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>University Email</Text>
+              <Text style={styles.label}>Email</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
-                placeholder="yourname@uktech.net.in"
+                placeholder="yourname@email.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 style={styles.input}

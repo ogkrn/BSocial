@@ -12,16 +12,16 @@ export default function Welcome() {
             <Ionicons name="school" size={48} color="white" />
           </View>
           <Text style={styles.appName}>BSocial</Text>
-          <Text style={styles.subtitle}>UTU University</Text>
+          <Text style={styles.subtitle}>Social Platform</Text>
         </View>
 
         {/* Hero text */}
         <View style={styles.heroContainer}>
           <Text style={styles.heroTitle}>
-            Connect with your{'\n'}campus community
+            Connect with your{'\n'}community
           </Text>
           <Text style={styles.heroSubtitle}>
-            The exclusive social platform for UTU students
+            The social platform to share and connect
           </Text>
         </View>
 
@@ -40,7 +40,7 @@ export default function Welcome() {
           </Link>
 
           <Text style={styles.footerText}>
-            Only for @uktech.net.in email holders
+            Join our community today!
           </Text>
         </View>
       </View>

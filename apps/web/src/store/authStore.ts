@@ -10,6 +10,12 @@ interface User {
   bio?: string;
   branch?: string;
   year?: string;
+  createdAt?: string;
+  _count?: {
+    posts: number;
+    followers: number;
+    following: number;
+  };
 }
 
 interface AuthState {

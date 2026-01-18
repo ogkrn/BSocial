@@ -1,7 +1,22 @@
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
 
 export default function AuthLayout() {
+  // Force light mode on auth pages - user hasn't enabled dark mode yet
+  useEffect(() => {
+    const wasDark = document.documentElement.classList.contains('dark');
+    document.documentElement.classList.remove('dark');
+    
+    return () => {
+      // Restore dark mode if it was enabled when user navigates away
+      const darkModeEnabled = localStorage.getItem('darkMode') === 'true';
+      if (darkModeEnabled) {
+        document.documentElement.classList.add('dark');
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex">
       {/* Left side - Branding */}
@@ -15,16 +30,15 @@ export default function AuthLayout() {
         
         <div className="text-white">
           <h1 className="text-4xl font-bold mb-4">
-            Connect with your<br />university community
+            Connect with your<br />community
           </h1>
           <p className="text-lg text-white/80">
-            The exclusive social platform for UTU University students.
-            Share, connect, and engage with your peers.
+            The social platform to share, connect, and engage with your peers.
           </p>
         </div>
 
         <div className="text-white/60 text-sm">
-          © {new Date().getFullYear()} BSocial. Made for UTU Students.
+          © {new Date().getFullYear()} BSocial. All rights reserved.
         </div>
       </div>
 

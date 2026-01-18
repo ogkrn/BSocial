@@ -26,8 +26,8 @@ BSocial/
 ## 🔐 AUTHENTICATION SYSTEM
 
 ### Overview
-BSocial uses a secure, university-exclusive authentication system that:
-1. **Only allows @uktech.net.in emails** (UTU University domain)
+BSocial uses a secure authentication system that:
+1. **Email-based registration** with OTP verification
 2. **Password-based login** with bcrypt hashing
 3. **JWT tokens** for session management (Access + Refresh tokens)
 4. **OTP verification** for new registrations
@@ -39,13 +39,13 @@ BSocial uses a secure, university-exclusive authentication system that:
 │                    REGISTRATION FLOW                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  User enters email (@uktech.net.in)                             │
+│  User enters email                                              │
 │           │                                                      │
 │           ▼                                                      │
 │  POST /api/auth/register/initiate                               │
 │           │                                                      │
 │           ▼                                                      │
-│  Server validates email domain ──► If invalid: Error            │
+│  Server validates email format ──► If invalid: Error            │
 │           │                                                      │
 │           ▼                                                      │
 │  Generate 6-digit OTP                                           │
@@ -623,7 +623,7 @@ The database is seeded with a test user:
 
 | Field | Value |
 |-------|-------|
-| **Email** | `230050101076@uktech.net.in` |
+| **Email** | `karan@bsocial.com` |
 | **Password** | `Karan@123` |
 | **Username** | `karan_joshi` |
 | **Name** | Karan Joshi |
@@ -708,7 +708,7 @@ Both apps use **Zustand** for state management:
 
 ## 🔒 SECURITY FEATURES
 
-1. **Email Domain Validation** - Only @uktech.net.in allowed
+1. **Email Validation** - Proper format validation
 2. **Password Hashing** - bcrypt with 12 rounds
 3. **JWT Tokens** - Short-lived access, long-lived refresh
 4. **httpOnly Cookies** - Refresh token protected from XSS

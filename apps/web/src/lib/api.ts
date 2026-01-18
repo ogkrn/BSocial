@@ -85,6 +85,13 @@ export const authApi = {
 // Users API
 export const usersApi = {
   getProfile: (username: string) => api.get(`/users/${username}`),
+  updateProfile: (data: {
+    fullName?: string;
+    bio?: string;
+    branch?: string;
+    year?: string;
+    avatarUrl?: string;
+  }) => api.put('/users/profile', data),
   follow: (userId: string) => api.post(`/users/${userId}/follow`),
   unfollow: (userId: string) => api.delete(`/users/${userId}/follow`),
   getFollowers: (userId: string) => api.get(`/users/${userId}/followers`),

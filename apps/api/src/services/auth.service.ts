@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import { randomInt } from 'crypto';
 import { config } from '../config/index.js';
 import prisma from '../lib/prisma.js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase.js';
 import { sendOtpEmail, sendWelcomeEmail } from './email.service.js';
 import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from '../middleware/errorHandler.js';
 
@@ -29,18 +28,18 @@ const generateTokens = (userId: string, email: string) => {
   return { accessToken, refreshToken };
 };
 
-// Validate university email domain
-const validateEmailDomain = (email: string): boolean => {
-  const domain = email.split('@')[1];
-  return domain === config.allowedEmailDomain;
+// Validate email format (accepts all email domains)
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 };
 
 export const authService = {
-  // Register new user - Step 1: Send OTP via Supabase
+  // Register new user - Step 1: Send OTP
   async initiateRegistration(email: string) {
-    // Validate email domain
-    if (!validateEmailDomain(email)) {
-      throw BadRequestError(`Only @${config.allowedEmailDomain} emails are allowed`);
+    // Validate email format
+    if (!validateEmail(email)) {
+      throw BadRequestError('Please enter a valid email address');
     }
 
     // Check if user already exists
@@ -52,27 +51,8 @@ export const authService = {
       throw ConflictError('User with this email already exists');
     }
 
-    // Use Supabase OTP if configured, otherwise fallback to local
-    if (isSupabaseConfigured() && supabase) {
-      // Send OTP via Supabase Auth
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false, // Don't create Supabase user, just send OTP
-        },
-      });
-
-      if (error) {
-        console.error('Supabase OTP error:', error);
-        // Fallback to local OTP
-        return await this.sendLocalOtp(email);
-      }
-
-      return { message: 'OTP sent to your email via Supabase' };
-    } else {
-      // Fallback to local OTP system
-      return await this.sendLocalOtp(email);
-    }
+    // Send OTP via Resend
+    return await this.sendLocalOtp(email);
   },
 
   // Local OTP sending (fallback)
@@ -112,43 +92,24 @@ export const authService = {
     branch?: string,
     year?: string
   ) {
-    // Validate email domain
-    if (!validateEmailDomain(email)) {
-      throw BadRequestError(`Only @${config.allowedEmailDomain} emails are allowed`);
+    // Validate email format
+    if (!validateEmail(email)) {
+      throw BadRequestError('Please enter a valid email address');
     }
 
-    // Try Supabase OTP verification first if configured
-    let otpVerified = false;
-    let otpRecord: any = null;
-
-    if (isSupabaseConfigured() && supabase) {
-      const { data, error } = await supabase.auth.verifyOtp({
+    // Verify OTP from database
+    const otpRecord = await prisma.otpCode.findFirst({
+      where: {
         email,
-        token: otp,
-        type: 'email',
-      });
+        code: otp,
+        type: 'verification',
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+    });
 
-      if (!error && data) {
-        otpVerified = true;
-      }
-    }
-
-    // If Supabase verification failed or not configured, try local verification
-    if (!otpVerified) {
-      otpRecord = await prisma.otpCode.findFirst({
-        where: {
-          email,
-          code: otp,
-          type: 'verification',
-          usedAt: null,
-          expiresAt: { gt: new Date() },
-        },
-      });
-
-      if (!otpRecord) {
-        throw BadRequestError('Invalid or expired OTP');
-      }
-      otpVerified = true;
+    if (!otpRecord) {
+      throw BadRequestError('Invalid or expired OTP');
     }
 
     // Check if username is taken
@@ -185,13 +146,11 @@ export const authService = {
       },
     });
 
-    // Mark OTP as used (only for local OTP)
-    if (otpRecord) {
-      await prisma.otpCode.update({
-        where: { id: otpRecord.id },
-        data: { usedAt: new Date() },
-      });
-    }
+    // Mark OTP as used
+    await prisma.otpCode.update({
+      where: { id: otpRecord.id },
+      data: { usedAt: new Date() },
+    });
 
     // Generate tokens
     const { accessToken, refreshToken } = generateTokens(user.id, user.email);
@@ -213,9 +172,9 @@ export const authService = {
 
   // Login with email and password
   async login(email: string, password: string) {
-    // Validate email domain
-    if (!validateEmailDomain(email)) {
-      throw BadRequestError(`Only @${config.allowedEmailDomain} emails are allowed`);
+    // Validate email format
+    if (!validateEmail(email)) {
+      throw BadRequestError('Please enter a valid email address');
     }
 
     // Find user

@@ -1,8 +1,8 @@
 # BSocial 🎓
 
-A university-exclusive social media platform for UTU (Uttarakhand Technical University) students with `@uktech.net.in` email addresses.
+A modern social media platform to connect, share, and engage with your community.
 
-![BSocial](https://img.shields.io/badge/BSocial-University%20Social%20Network-667eea?style=for-the-badge)
+![BSocial](https://img.shields.io/badge/BSocial-Social%20Network-667eea?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
@@ -10,12 +10,12 @@ A university-exclusive social media platform for UTU (Uttarakhand Technical Univ
 
 ## 📱 Features
 
-- **🔐 University-Exclusive Access**: Only students with `@uktech.net.in` emails can register
-- **📝 Posts & Feed**: Share updates, thoughts, and media with fellow students
-- **💬 Real-time Messaging**: Chat with classmates using Socket.io powered messaging
-- **🏛️ Club Pages**: Create and follow pages for clubs like Dramatics, Sports, Tech, etc.
-- **👤 Profile Management**: Customize your profile with branch, year, and bio
-- **🔍 Search**: Find students, posts, and pages across the university
+- **🔐 Secure Authentication**: Email-based registration with OTP verification
+- **📝 Posts & Feed**: Share updates, thoughts, and media with your network
+- **💬 Real-time Messaging**: Chat with connections using Socket.io powered messaging
+- **🏛️ Community Pages**: Create and follow pages for communities, groups, and interests
+- **👤 Profile Management**: Customize your profile with bio and more
+- **🔍 Search**: Find users, posts, and pages across the platform
 - **📱 Cross-Platform**: Available on Web and Mobile (iOS & Android)
 
 ## 🏗️ Tech Stack
@@ -78,7 +78,7 @@ BSocial/
 │           ├── store/       # Zustand stores
 │           └── lib/         # API & utilities
 │
-├── packages/                # Shared packages (future)
+├── packages/                # Shared packages
 ├── docs/                    # Documentation
 ├── turbo.json              # Turborepo config
 └── pnpm-workspace.yaml     # pnpm workspace config
@@ -150,7 +150,7 @@ BSocial/
 ### Test Credentials
 
 After seeding, use these credentials to test:
-- **Email**: `230050101076@uktech.net.in`
+- **Email**: `karan@bsocial.com`
 - **Password**: `Karan@123`
 
 ## 📱 Mobile App Setup
@@ -210,7 +210,6 @@ After seeding, use these credentials to test:
 
 - Passwords are hashed using bcrypt
 - JWT tokens for authentication (15min access, 7 days refresh)
-- Email validation for `@uktech.net.in` domain only
 - Protected routes with authentication middleware
 
 ## 🤝 Contributing
@@ -232,5 +231,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-<p align="center">Made with ❤️ for UTU Students</p>
+<p align="center">Made with ❤️</p>
 

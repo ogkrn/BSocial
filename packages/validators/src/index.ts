@@ -1,13 +1,12 @@
 import { z } from 'zod';
 
-// Email validation for @uktech.net.in domain
-export const universityEmailSchema = z
+// Email validation (accepts all valid email addresses)
+export const emailSchema = z
   .string()
-  .email('Please enter a valid email address')
-  .refine(
-    (email) => email.toLowerCase().endsWith('@uktech.net.in'),
-    'Only UTU university emails (@uktech.net.in) are allowed'
-  );
+  .email('Please enter a valid email address');
+
+// Legacy alias for backwards compatibility
+export const universityEmailSchema = emailSchema;
 
 // Username validation
 export const usernameSchema = z

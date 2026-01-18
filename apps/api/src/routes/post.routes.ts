@@ -85,9 +85,10 @@ router.post(
   authenticate,
   [
     body('content')
+      .optional()
       .trim()
-      .isLength({ min: 1, max: 5000 })
-      .withMessage('Content must be 1-5000 characters'),
+      .isLength({ max: 5000 })
+      .withMessage('Content must be at most 5000 characters'),
     body('mediaUrls').optional().isArray(),
     body('postType').optional().isIn(['text', 'image', 'poll', 'event']),
     body('visibility').optional().isIn(['public', 'followers', 'page_members']),
@@ -103,7 +104,15 @@ router.post(
         });
       }
 
-      const { content, mediaUrls = [], postType = 'text', visibility = 'public', pageId } = req.body;
+      const { content = '', mediaUrls = [], postType = 'text', visibility = 'public', pageId } = req.body;
+
+      // Require either content or media
+      if (!content.trim() && mediaUrls.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: { message: 'Post must have content or media' },
+        });
+      }
 
       const post = await prisma.post.create({
         data: {

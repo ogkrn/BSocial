@@ -1,7 +1,7 @@
 {
   "name": "bsocial",
   "version": "1.0.0",
-  "description": "BSocial - University exclusive social media platform for UTU students",
+  "description": "BSocial - A modern social media platform to connect and share",
   "private": true,
   "workspaces": [
     "apps/*",

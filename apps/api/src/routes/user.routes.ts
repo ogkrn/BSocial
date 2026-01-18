@@ -5,6 +5,41 @@ import { NotFoundError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
+// GET /api/users/search - Search users (must be before /:username)
+router.get('/search', authenticate, async (req, res, next) => {
+  try {
+    const { q, limit = '20' } = req.query;
+
+    if (!q) {
+      return res.json({ success: true, data: { users: [] } });
+    }
+
+    const searchTerm = (q as string).toLowerCase();
+    
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { fullName: { contains: searchTerm } },
+          { username: { contains: searchTerm } },
+        ],
+        isActive: true,
+      },
+      take: parseInt(limit as string),
+      select: {
+        id: true,
+        fullName: true,
+        username: true,
+        avatarUrl: true,
+        branch: true,
+      },
+    });
+
+    res.json({ success: true, data: { users } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET /api/users/:username - Get user profile
 router.get('/:username', authenticate, async (req, res, next) => {
   try {
@@ -53,6 +88,50 @@ router.get('/:username', authenticate, async (req, res, next) => {
         isFollowing: !!isFollowing,
         isOwnProfile: req.user!.id === user.id,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /api/users/profile - Update current user's profile
+router.put('/profile', authenticate, async (req, res, next) => {
+  try {
+    const { fullName, bio, branch, year, avatarUrl } = req.body;
+    const userId = req.user!.id;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(fullName && { fullName }),
+        ...(bio !== undefined && { bio }),
+        ...(branch && { branch }),
+        ...(year && { year }),
+        ...(avatarUrl && { avatarUrl }),
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        username: true,
+        avatarUrl: true,
+        bio: true,
+        branch: true,
+        year: true,
+        createdAt: true,
+        _count: {
+          select: {
+            posts: true,
+            followers: true,
+            following: true,
+          },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      data: updatedUser,
     });
   } catch (error) {
     next(error);
@@ -174,39 +253,6 @@ router.get('/:userId/following', authenticate, async (req, res, next) => {
         following: following.map((f) => f.following),
       },
     });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET /api/users/search - Search users
-router.get('/search', authenticate, async (req, res, next) => {
-  try {
-    const { q, limit = '20' } = req.query;
-
-    if (!q) {
-      return res.json({ success: true, data: { users: [] } });
-    }
-
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [
-          { fullName: { contains: q as string, mode: 'insensitive' } },
-          { username: { contains: q as string, mode: 'insensitive' } },
-        ],
-        isActive: true,
-      },
-      take: parseInt(limit as string),
-      select: {
-        id: true,
-        fullName: true,
-        username: true,
-        avatarUrl: true,
-        branch: true,
-      },
-    });
-
-    res.json({ success: true, data: { users } });
   } catch (error) {
     next(error);
   }

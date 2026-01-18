@@ -66,12 +66,12 @@ SUPABASE_URL="https://your-project-id.supabase.co"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key-here"
 ```
 
-### 6. Restrict Email Domain (Recommended)
+### 6. Email Domain Restriction (Optional)
 
-To ensure only `@uktech.net.in` emails can sign up:
+If you want to restrict signups to a specific email domain:
 
 1. Go to **Authentication** → **Providers** → **Email**
-2. Under **Restrict email domain**, add: `uktech.net.in`
+2. Under **Restrict email domain**, add your domain (e.g., `yourdomain.com`)
 
 This adds an extra layer of validation on Supabase's side.
 
@@ -138,7 +138,7 @@ if (isSupabaseConfigured()) {
    ```bash
    curl -X POST http://localhost:5000/api/auth/register/initiate \
      -H "Content-Type: application/json" \
-     -d '{"email": "test@uktech.net.in"}'
+     -d '{"email": "test@example.com"}'
    ```
 
 3. Check your email for the OTP code
@@ -148,7 +148,7 @@ if (isSupabaseConfigured()) {
    curl -X POST http://localhost:5000/api/auth/register/complete \
      -H "Content-Type: application/json" \
      -d '{
-       "email": "test@uktech.net.in",
+       "email": "test@example.com",
        "otp": "123456",
        "password": "YourPassword123",
        "fullName": "Test User",
@@ -161,7 +161,7 @@ if (isSupabaseConfigured()) {
 ### OTP Email Not Received
 
 1. Check spam/junk folder
-2. Verify email domain is `@uktech.net.in`
+2. Verify email address is correct
 3. Check Supabase Auth logs in dashboard
 4. Ensure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are correct
 

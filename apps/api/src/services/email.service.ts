@@ -1,15 +1,42 @@
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { config } from '../config/index.js';
 
-const transporter = nodemailer.createTransport({
-  host: config.email.host,
-  port: config.email.port,
-  secure: config.email.port === 465,
-  auth: {
-    user: config.email.user,
-    pass: config.email.pass,
-  },
-});
+// Initialize Resend if API key is provided
+const resendApiKey = process.env.RESEND_API_KEY;
+let resend: Resend | null = null;
+
+if (resendApiKey) {
+  resend = new Resend(resendApiKey);
+  console.log('✅ Resend email service configured');
+}
+
+// Check if SMTP email is configured (fallback)
+const isSmtpConfigured = () => {
+  return !!(
+    config.email.host &&
+    config.email.user &&
+    config.email.pass &&
+    config.email.user !== 'your-email@gmail.com'
+  );
+};
+
+let transporter: nodemailer.Transporter | null = null;
+
+if (!resend && isSmtpConfigured()) {
+  transporter = nodemailer.createTransport({
+    host: config.email.host,
+    port: config.email.port,
+    secure: config.email.port === 465,
+    auth: {
+      user: config.email.user,
+      pass: config.email.pass,
+    },
+  });
+  console.log('✅ SMTP email transporter configured');
+} else if (!resend) {
+  console.warn('⚠️ Email not configured. Set RESEND_API_KEY in .env to enable email sending.');
+}
 
 interface SendEmailOptions {
   to: string;
@@ -18,21 +45,68 @@ interface SendEmailOptions {
 }
 
 export const sendEmail = async ({ to, subject, html }: SendEmailOptions): Promise<void> => {
-  try {
-    await transporter.sendMail({
-      from: config.email.from,
-      to,
-      subject,
-      html,
-    });
-    console.log(`Email sent to ${to}`);
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Failed to send email');
+  // Try Resend first (recommended)
+  if (resend) {
+    try {
+      const { error } = await resend.emails.send({
+        from: 'BSocial <onboarding@resend.dev>',
+        to: [to],
+        subject,
+        html,
+      });
+      
+      if (error) {
+        console.error('Resend error:', error);
+        throw new Error('Failed to send email via Resend');
+      }
+      
+      console.log(`✅ Email sent to ${to} via Resend`);
+      return;
+    } catch (err) {
+      console.error('Resend error:', err);
+      throw new Error('Failed to send email');
+    }
   }
+
+  // Fallback to SMTP
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: config.email.from,
+        to,
+        subject,
+        html,
+      });
+      console.log(`✅ Email sent to ${to} via SMTP`);
+      return;
+    } catch (error) {
+      console.error('SMTP error:', error);
+      throw new Error('Failed to send email');
+    }
+  }
+
+  // No email service configured - log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📧 [DEV MODE] Email would be sent to:', to);
+    console.log('📧 [DEV MODE] Subject:', subject);
+    return;
+  }
+  
+  throw new Error('Email service not configured. Please set RESEND_API_KEY in .env');
 };
 
 export const sendOtpEmail = async (email: string, otp: string): Promise<void> => {
+  // In development without email configured, log OTP to console
+  if (!resend && !transporter && process.env.NODE_ENV === 'development') {
+    console.log('\n' + '='.repeat(50));
+    console.log('📧 OTP CODE FOR DEVELOPMENT');
+    console.log('='.repeat(50));
+    console.log(`Email: ${email}`);
+    console.log(`OTP Code: ${otp}`);
+    console.log('='.repeat(50) + '\n');
+    return;
+  }
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -50,7 +124,7 @@ export const sendOtpEmail = async (email: string, otp: string): Promise<void> =>
       <div class="container">
         <div class="header">
           <h1>🎓 BSocial</h1>
-          <p>UTU University Social Platform</p>
+          <p>Your Social Platform</p>
         </div>
         <div class="content">
           <h2>Verify Your Email</h2>
@@ -61,7 +135,7 @@ export const sendOtpEmail = async (email: string, otp: string): Promise<void> =>
           <p>If you didn't request this code, please ignore this email.</p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} BSocial - Made for UTU Students</p>
+          <p>© ${new Date().getFullYear()} BSocial - All rights reserved</p>
         </div>
       </div>
     </body>
@@ -96,7 +170,7 @@ export const sendWelcomeEmail = async (email: string, name: string): Promise<voi
         </div>
         <div class="content">
           <h2>Hey ${name}! 👋</h2>
-          <p>Welcome to the UTU University student community!</p>
+          <p>Welcome to the BSocial community!</p>
           <p>Here's what you can do on BSocial:</p>
           <ul>
             <li>📝 Share posts and updates with your peers</li>
@@ -109,7 +183,7 @@ export const sendWelcomeEmail = async (email: string, name: string): Promise<voi
           </p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} BSocial - Made for UTU Students</p>
+          <p>© ${new Date().getFullYear()} BSocial - All rights reserved</p>
         </div>
       </div>
     </body>

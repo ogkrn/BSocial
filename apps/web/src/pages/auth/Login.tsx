@@ -48,17 +48,17 @@ export default function Login() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            University Email
+            Email
           </label>
           <input
             type="email"
             className="input"
-            placeholder="yourname@uktech.net.in"
+            placeholder="yourname@email.com"
             {...register('email', {
               required: 'Email is required',
               pattern: {
-                value: /^[^\s@]+@uktech\.net\.in$/,
-                message: 'Please use your @uktech.net.in email',
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Please enter a valid email address',
               },
             })}
           />

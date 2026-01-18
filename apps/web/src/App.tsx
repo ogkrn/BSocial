@@ -12,6 +12,7 @@ import Register from '@/pages/auth/Register';
 import VerifyOtp from '@/pages/auth/VerifyOtp';
 import Feed from '@/pages/Feed';
 import Profile from '@/pages/Profile';
+import EditProfile from '@/pages/EditProfile';
 import Messages from '@/pages/Messages';
 import Pages from '@/pages/Pages';
 import Settings from '@/pages/Settings';
@@ -53,6 +54,7 @@ function App() {
       {/* Protected Routes */}
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/feed" element={<Feed />} />
+        <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/profile/:username" element={<Profile />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/messages/:conversationId" element={<Messages />} />

@@ -31,11 +31,10 @@ export default function Landing() {
       {/* Hero */}
       <section className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-          Your University,<br />Your Community
+          Your Network,<br />Your Community
         </h1>
         <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-          The exclusive social platform for UTU University students. 
-          Connect with classmates, join club pages, and stay updated with campus life.
+          The social platform to connect with people, join community pages, and stay updated.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
@@ -45,7 +44,7 @@ export default function Landing() {
             Join Now <ArrowRight className="w-5 h-5" />
           </Link>
           <p className="text-white/60 text-sm">
-            Only for @uktech.net.in email holders
+            Join our community today!
           </p>
         </div>
       </section>
@@ -106,7 +105,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="container mx-auto px-4 py-8 border-t border-white/10">
         <div className="flex flex-col md:flex-row items-center justify-between text-white/60 text-sm">
-          <p>© {new Date().getFullYear()} BSocial. Made for UTU University students.</p>
+          <p>© {new Date().getFullYear()} BSocial. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-white">Privacy</a>
             <a href="#" className="hover:text-white">Terms</a>

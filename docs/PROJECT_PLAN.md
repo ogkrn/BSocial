@@ -1,8 +1,8 @@
-# BSocial - UTU University Social Media Platform
+# BSocial - Social Media Platform
 
 ## 🎯 Project Overview
 
-BSocial is an exclusive social media platform for UTU University students, verified through their @uktech.net.in email domain.
+BSocial is a modern social media platform to connect, share, and engage with your community.
 
 ---
 
@@ -57,16 +57,16 @@ BSocial is an exclusive social media platform for UTU University students, verif
 
 ## 🔐 Authentication Flow
 
-### Email Verification Flow (University Exclusive)
+### Email Verification Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    REGISTRATION FLOW                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  1. User enters email (must be @uktech.net.in)                  │
+│  1. User enters email                                           │
 │              ↓                                                   │
-│  2. Backend validates email domain                               │
+│  2. Backend validates email format                              │
 │              ↓                                                   │
 │  3. Generate 6-digit OTP + JWT temp token                       │
 │              ↓                                                   │
@@ -105,12 +105,11 @@ BSocial is an exclusive social media platform for UTU University students, verif
 │  2. Send magic link to email                                    │
 │  3. Click link → Auto login                                     │
 │                                                                  │
-│  Option C: Google OAuth (University Google Account)             │
+│  Option C: Google OAuth                                         │
 │  ──────────────────────────────────────────────────             │
 │  1. Click "Login with Google"                                   │
-│  2. Select @uktech.net.in Google account                        │
-│  3. Verify domain on callback                                   │
-│  4. Create/login user                                           │
+│  2. Select Google account                                       │
+│  3. Create/login user                                           │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -224,7 +223,7 @@ Web App:    httpOnly cookies + memory
 -- Users Table
 users
 ├── id (UUID, PK)
-├── email (unique, @uktech.net.in)
+├── email (unique)
 ├── password_hash
 ├── full_name
 ├── username (unique)
@@ -477,7 +476,7 @@ SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_USER=apikey
 SMTP_PASS=your-sendgrid-api-key
-EMAIL_FROM=noreply@bsocial.uktech.net.in
+EMAIL_FROM=noreply@bsocial.com
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=your-cloud-name
@@ -491,14 +490,14 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 # App
 APP_URL=http://localhost:3000
 API_URL=http://localhost:5000
-ALLOWED_EMAIL_DOMAIN=uktech.net.in
+ALLOWED_EMAIL_DOMAIN=
 ```
 
 ---
 
 ## 🔒 Security Considerations
 
-1. **Email Domain Validation** - Strict regex for @uktech.net.in
+1. **Email Validation** - Proper format validation
 2. **Rate Limiting** - Prevent brute force attacks
 3. **Input Sanitization** - Prevent XSS/SQL injection
 4. **HTTPS Only** - Force SSL in production
